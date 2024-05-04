@@ -11,7 +11,7 @@ nltk.download('punkt')
 # Set Streamlit page config
 st.set_page_config(
     page_title="News Summarizer",
-    page_icon="📰",
+    page_icon=":newspaper:",
     layout="centered",
 )
 
