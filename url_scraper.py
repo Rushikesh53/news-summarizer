@@ -1,8 +1,11 @@
 import streamlit as st
-import newspaper
-from newspaper import Article
-import nltk
+import requests
+from bs4 import BeautifulSoup
+import re
+import math
+from nltk.tokenize import word_tokenize
 from googletrans import Translator
+import nltk
 nltk.download('punkt')
 
 def get_article_body(url):
@@ -17,10 +20,15 @@ from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 
 def get_article_body(url):
-    article = Article(url)
-    article.download()
-    article.parse()
-    return article.text
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    # Extract the article text from the webpage
+    article_text = ""
+    for paragraph in soup.find_all('p'):
+        article_text += paragraph.get_text() + " "
+    
+    return article_text
 
 def clean_text(article_body):
     article = article_body.split(". ")
