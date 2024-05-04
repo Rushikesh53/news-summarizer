@@ -1,5 +1,5 @@
 streamlit
-newspaper3k
+newspaper2k
 nltk
 googletrans
 lxml
