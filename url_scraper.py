@@ -8,6 +8,13 @@ from googletrans import Translator
 import nltk
 nltk.download('punkt')
 
+# Set Streamlit page config
+st.set_page_config(
+    page_title="News Summarizer",
+    page_icon="📰",
+    layout="centered",
+)
+
 def get_article_body(url):
     article = Article(url)
     article.download()
