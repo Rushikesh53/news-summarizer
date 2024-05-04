@@ -127,21 +127,53 @@ def sent_scores(tfidf_scores, sentences, text_data):
         sent_data.append(temp)
     return sent_data
 
-def summary(sent_data):
+# def summary(sent_data):
+#     cnt = 0
+#     summary = []
+#     for t_dict in sent_data:
+#         cnt  = cnt + t_dict['score']
+#     avg = cnt / len(sent_data)
+#     for sent in sent_data:
+#         if sent['score'] >= (avg):
+#             summary.append(sent['sentence'])
+#     summary = " ".join(summary)
+#     return summary
+def summary(sent_data, threshold):
     cnt = 0
     summary = []
     for t_dict in sent_data:
-        cnt  = cnt + t_dict['score']
+        cnt += t_dict['score']
     avg = cnt / len(sent_data)
+    
     for sent in sent_data:
-        if sent['score'] >= (avg):
+        if sent['score'] >= avg and len(summary) < threshold:
             summary.append(sent['sentence'])
-    summary = " ".join(summary)
-    return summary
+    
+    # Join the selected sentences into a single string
+    summary_text = " ".join(summary)
+    
+    return summary_text
+
+
 
 def translate_to_hindi(text):
     translator = Translator()
     translated_text = translator.translate(text, dest='hi').text
+    return translated_text
+
+def translate_to_marathi(text):
+    translator = Translator()
+    translated_text = translator.translate(text, dest='mr').text
+    return translated_text
+
+def translate_to_telugu(text):
+    translator = Translator()
+    translated_text = translator.translate(text, dest='te').text
+    return translated_text
+
+def translate_to_tamil(text):
+    translator = Translator()
+    translated_text = translator.translate(text, dest='ta').text
     return translated_text
 
 def main():
@@ -149,7 +181,33 @@ def main():
     st.write("Enter the URL of the news article you want to summarize:")
     url = st.text_input("URL:")
     st.write("Select the language you want the summary to be translated to:")
-    lang = st.selectbox("Language", ("English", "Hindi"))
+    
+    # Define the language options
+    languages = {
+        "English": "en",
+        "Hindi": "hi",
+        "Marathi": "mr",
+        "Telugu": "te",
+        "Tamil": "ta"
+    }
+    
+    lang = st.selectbox("Language", list(languages.keys()))
+
+    # Define the threshold options
+    threshold_options = {
+        "Low": 3,
+        "Medium": 5,
+        "High": 7
+    }
+
+    threshold = st.radio("Select the length of the summary:", list(threshold_options.keys()))
+
+    # Ensure that the threshold value is valid
+    if threshold not in threshold_options:
+        st.error("Invalid threshold value. Please select a valid threshold from the radio buttons.")
+        return
+
+    threshold_value = threshold_options[threshold]
 
     if st.button("Summarize"):
         article_body = get_article_body(url)
@@ -160,14 +218,15 @@ def main():
         idf_scores = calc_IDF(text_data, freq_list)
         tfidf_scores = calc_TFIDF(tf_scores, idf_scores)
         sent_data = sent_scores(tfidf_scores, sentences, text_data)
-        result = summary(sent_data)
-        if lang == "Hindi":
-            translated_result = translate_to_hindi(result)
-            st.write("Summary (Translated to Hindi):")
-            st.write(translated_result)
-        else:
-            st.write("Summary (English):")
-            st.write(result)
+        result = summary(sent_data, threshold_value)  # Pass the threshold value here
+        
+        # Translate the summary to the selected language
+        translator = Translator()
+        translated_result = translator.translate(result, dest=languages[lang]).text
+        
+        st.write(f"Summary (Translated to {lang}):")
+        st.write(translated_result)
+
 
 if __name__ == "__main__":
     main()
