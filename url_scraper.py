@@ -127,33 +127,23 @@ def sent_scores(tfidf_scores, sentences, text_data):
         sent_data.append(temp)
     return sent_data
 
-# def summary(sent_data):
-#     cnt = 0
-#     summary = []
-#     for t_dict in sent_data:
-#         cnt  = cnt + t_dict['score']
-#     avg = cnt / len(sent_data)
-#     for sent in sent_data:
-#         if sent['score'] >= (avg):
-#             summary.append(sent['sentence'])
-#     summary = " ".join(summary)
-#     return summary
-def summary(sent_data, threshold):
+def summary(sent_data, threshold_value):
     cnt = 0
     summary = []
     for t_dict in sent_data:
-        cnt += t_dict['score']
+        cnt  = cnt + t_dict['score']
     avg = cnt / len(sent_data)
-    
     for sent in sent_data:
-        if sent['score'] >= avg and len(summary) < threshold:
+        if sent['score'] >= (avg):
             summary.append(sent['sentence'])
-    
-    # Join the selected sentences into a single string
-    summary_text = " ".join(summary)
-    
-    return summary_text
-
+    # Limit the summary to the threshold value
+    if threshold_value == "Medium":
+        summary = ". ".join(summary[:7]) + "."
+    elif threshold_value == "High":
+        summary = ". ".join(summary[:10]) + "."
+    else:
+        summary = ". ".join(summary[:3]) + "."
+    return summary
 
 
 def translate_to_hindi(text):
@@ -177,56 +167,62 @@ def translate_to_tamil(text):
     return translated_text
 
 def main():
-    st.title("URL Summarizer")
-    st.write("Enter the URL of the news article you want to summarize:")
-    url = st.text_input("URL:")
-    st.write("Select the language you want the summary to be translated to:")
+    st.sidebar.title("What's on your mind :face_with_monocle:")
+    tabs = ["Full Text", "Summary"]
+    page = st.sidebar.radio("Select a page", tabs)
+
+    if page == "Full Text":
+        st.title("News Summarizer and Translator:newspaper:")
+        st.markdown("## Full Text !")
+        url = st.text_input("Enter the URL of the news article:")
+        if st.button("Get Text"):
+            article_body = get_article_body(url)
+            st.write(article_body)
     
-    # Define the language options
-    languages = {
-        "English": "en",
-        "Hindi": "hi",
-        "Marathi": "mr",
-        "Telugu": "te",
-        "Tamil": "ta"
-    }
-    
-    lang = st.selectbox("Language", list(languages.keys()))
-
-    # Define the threshold options
-    threshold_options = {
-        "Low": 3,
-        "Medium": 5,
-        "High": 7
-    }
-
-    threshold = st.radio("Select the length of the summary:", list(threshold_options.keys()))
-
-    # Ensure that the threshold value is valid
-    if threshold not in threshold_options:
-        st.error("Invalid threshold value. Please select a valid threshold from the radio buttons.")
-        return
-
-    threshold_value = threshold_options[threshold]
-
-    if st.button("Summarize"):
-        article_body = get_article_body(url)
-        sentences = clean_text(article_body)
-        text_data = cnt_in_sent(sentences)
-        freq_list = freq_dict(sentences)
-        tf_scores = calc_TF(text_data, freq_list)
-        idf_scores = calc_IDF(text_data, freq_list)
-        tfidf_scores = calc_TFIDF(tf_scores, idf_scores)
-        sent_data = sent_scores(tfidf_scores, sentences, text_data)
-        result = summary(sent_data, threshold_value)  # Pass the threshold value here
+    if page == "Summary":
+        st.title("News Summarizer and Translator:newspaper:")
+        st.markdown("## Summary !")
+        st.write("Enter the URL of the news article you want to summarize:")
+        url = st.text_input("URL:")
+        st.write("Select the language you want the summary to be translated to:")
         
-        # Translate the summary to the selected language
-        translator = Translator()
-        translated_result = translator.translate(result, dest=languages[lang]).text
+        # Define the language options
+        languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Marathi": "mr",
+            "Telugu": "te",
+            "Tamil": "ta"
+        }
         
-        st.write(f"Summary (Translated to {lang}):")
-        st.write(translated_result)
+        lang = st.selectbox("Language", list(languages.keys()))
 
+        # Define the threshold options
+        threshold_options = {
+            "Low": 3,
+            "Medium": 5,
+            "High": 7
+        }
+
+        threshold = st.radio("Select the length of the summary:", list(threshold_options.keys()))
+
+        if st.button("Summarize"):
+            article_body = get_article_body(url)
+            sentences = clean_text(article_body)
+            text_data = cnt_in_sent(sentences)
+            freq_list = freq_dict(sentences)
+            tf_scores = calc_TF(text_data, freq_list)
+            idf_scores = calc_IDF(text_data, freq_list)
+            tfidf_scores = calc_TFIDF(tf_scores, idf_scores)
+            sent_data = sent_scores(tfidf_scores, sentences, text_data)
+            result = summary(sent_data, threshold)  # Pass the threshold value here
+
+            # Translate the summary to the selected language
+            translator = Translator()
+            translated_result = translator.translate(result, dest=languages[lang]).text
+            
+            st.write(f"Summary (Translated to {lang}):")
+            st.write(translated_result)
 
 if __name__ == "__main__":
     main()
