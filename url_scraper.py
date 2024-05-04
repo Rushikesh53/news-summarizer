@@ -169,7 +169,7 @@ def translate_to_tamil(text):
 def main():
     st.sidebar.title("What's on your mind :face_with_monocle:")
     tabs = ["Full Text", "Summary"]
-    page = st.sidebar.radio("Select a page", tabs)
+    page = st.sidebar.radio("Want Full Text or Summary ?", tabs)
 
     if page == "Full Text":
         st.title("News Summarizer and Translator:newspaper:")
