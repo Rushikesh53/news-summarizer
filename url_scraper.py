@@ -1,5 +1,5 @@
 import streamlit as st
-import newspaper
+import newspaper3k
 from newspaper import Article
 import nltk
 from googletrans import Translator
