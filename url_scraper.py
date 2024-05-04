@@ -1,6 +1,6 @@
 import streamlit as st
-import newspaper
-from newspaper import Article
+import newspaper3k
+from newspaper3k import Article
 import nltk
 from googletrans import Translator
 nltk.download('punkt')
